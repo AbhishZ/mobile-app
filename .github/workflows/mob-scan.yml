@@ -17,7 +17,24 @@ permissions:
   contents: read
 
 jobs:
-  mobile-security:
+
+
+## Dependecy scan
+  dependency-scan:
+    name: Dependency scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v2
+        continue-on-error: true
+      
+      
+## MobSF scan     
+  code-security:
     permissions:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
@@ -31,7 +48,7 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Run mobsfscan
+      - name: Run mobsfscan on source code
         uses: MobSF/mobsfscan@a60d10a83af68e23e0b30611c6515da604f06f65
         with:
           args: . --sarif --output results.sarif || true
@@ -40,3 +57,46 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: results.sarif
+
+## MobSF scan     
+  binary-security:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Binary/APK file upload
+        shell: bash
+        run: |
+          wget https://github.com/dineshshetty/Android-InsecureBankv2/releases/download/2.3.1/InsecureBankv2.apk
+          curl -F "file=@InsecureBankv2.apk" http://35.89.117.245:8000/api/v1/upload -H "Authorization:8bc612bf89855d82f6bec1197255ab5d1dcdbb9a6928c4e004dd5e13ff62d7b0"
+          curl -X POST --url http://35.89.117.245:8000/api/v1/scan --data "scan_type=apk&file_name=InsecureBankv2.apk&hash=`md5sum InsecureBankv2.apk | awk '{print $1}'`" -H "Authorization:8bc612bf89855d82f6bec1197255ab5d1dcdbb9a6928c4e004dd5e13ff62d7b0"
+          curl -X POST --url http://35.89.117.245:8000/api/v1/report_json --data "scan_type=apk&file_name=InsecureBankv2.apk&hash=`md5sum InsecureBankv2.apk | awk '{print $1}'`" -H "Authorization:8bc612bf89855d82f6bec1197255ab5d1dcdbb9a6928c4e004dd5e13ff62d7b0" > mobile-scan.json
+          
+## Container scan
+  Image_scan:
+    name: Appium docker Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull docker image
+        run: docker pull appium/appium
+
+      - uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: 'docker.io/appium/appium:latest'
+          exit-code: '1'
+#           ignore-unfixed: true
+#           vuln-type: 'os,library'
+#           format: 'json'
+#           output: 'trivy-results.json'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
