@@ -73,14 +73,13 @@ jobs:
           wget https://github.com/dineshshetty/Android-InsecureBankv2/releases/download/2.3.1/InsecureBankv2.apk
           curl -F "file=@InsecureBankv2.apk" http://35.89.117.245:8000/api/v1/upload -H "Authorization:8bc612bf89855d82f6bec1197255ab5d1dcdbb9a6928c4e004dd5e13ff62d7b0"
           curl -X POST --url http://35.89.117.245:8000/api/v1/scan --data "scan_type=apk&file_name=InsecureBankv2.apk&hash=`md5sum InsecureBankv2.apk | awk '{print $1}'`" -H "Authorization:8bc612bf89855d82f6bec1197255ab5d1dcdbb9a6928c4e004dd5e13ff62d7b0"
-          curl -X POST --url http://35.89.117.245:8000/api/v1/report_json --data "scan_type=apk&file_name=InsecureBankv2.apk&hash=`md5sum InsecureBankv2.apk | awk '{print $1}'`" -H "Authorization:8bc612bf89855d82f6bec1197255ab5d1dcdbb9a6928c4e004dd5e13ff62d7b0" > results.sarif
-          dir
-          
+          curl -X POST --url http://35.89.117.245:8000/api/v1/report_json --data "scan_type=apk&file_name=InsecureBankv2.apk&hash=`md5sum InsecureBankv2.apk | awk '{print $1}'`" -H "Authorization:8bc612bf89855d82f6bec1197255ab5d1dcdbb9a6928c4e004dd5e13ff62d7b0"
+          dir   
       
-      - name: Upload mobsfscan report
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: results.sarif
+#       - name: Upload mobsfscan report
+#         uses: github/codeql-action/upload-sarif@v2
+#         with:
+#           sarif_file: results.sarif
           
 ## Container scan
   Image_scan:
