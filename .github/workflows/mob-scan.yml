@@ -23,16 +23,23 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-        
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref }}
-      - name: trufflehog-actions-scan
-        uses: edplato/trufflehog-actions-scan@master
-        with:
-          scanArguments: " "
-        continue-on-error: true
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}} 
+          
+#       - uses: actions/checkout@v3
+#         with:
+#           fetch-depth: 0
+#           ref: ${{ github.head_ref }}
+#       - name: trufflehog-actions-scan
+#         uses: edplato/trufflehog-actions-scan@master
+#         with:
+#           scanArguments: " "
+#         continue-on-error: true
         
 ## Dependecy scan
   dependency-scan:
