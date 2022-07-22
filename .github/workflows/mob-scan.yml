@@ -17,7 +17,21 @@ permissions: write-all
 
 jobs:
 
-
+ ## Trufflehog secret scan        
+  secret_scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    
+    steps:
+        
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+      - name: trufflehog-actions-scan
+        uses: edplato/trufflehog-actions-scan@master
+        continue-on-error: true
+        
 ## Dependecy scan
   dependency-scan:
     name: Dependency scan
